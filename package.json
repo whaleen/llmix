@@ -1,16 +1,30 @@
 {
   "name": "llmix",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Generate LLM-friendly content files from your repository",
-  "main": "src/cli/index.js",
+  "main": "dist/cli/index.js",
   "bin": {
-    "llmix": "./src/cli/index.js"
+    "llmix": "./bin/llmix.js"
   },
   "type": "module",
+  "files": [
+    "dist",
+    "bin",
+    "README.npm.md",
+    "LICENSE"
+  ],
+  "readme": "README.npm.md",
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build && npm run prepare-readme && npm run verify",
+    "postpublish": "npm run restore-readme",
+    "prepare-readme": "cp README.md README.md.backup && cp README.npm.md README.md",
+    "restore-readme": "mv README.md.backup README.md",
+    "verify": "node scripts/verify-build.js",
+    "test-install": "node scripts/test-install.js",
+    "clean": "rimraf dist .llmix README.md.backup"
   },
   "repository": {
     "type": "git",
@@ -22,7 +36,10 @@
     "files",
     "repository",
     "ai",
-    "development"
+    "development",
+    "code-analysis",
+    "documentation",
+    "context"
   ],
   "author": "@whaleen",
   "license": "MIT",
@@ -30,6 +47,12 @@
     "url": "https://github.com/whaleen/llmix/issues"
   },
   "homepage": "https://github.com/whaleen/llmix#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "boxen": "^7.1.1",
     "chalk": "^4.1.2",
@@ -47,6 +70,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.33",
+    "rimraf": "^5.0.5",
     "tailwindcss": "^3.4.1",
     "vite": "^5.0.12"
   }
