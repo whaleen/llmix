@@ -1,6 +1,10 @@
 # LLMix
 
-LLMix helps you prepare code for AI interactions by organizing and generating context-rich content files from your repository.
+When working with AI language models, sharing the right context from your codebase is crucial but often cumbersome. Developers frequently find themselves manually copying and pasting multiple files or code snippets to provide adequate context for their queries. LLMix streamlines this process by providing a visual interface to organize and prepare your code for AI interactions.
+
+With LLMix, you can create focused groups of related files from your repository, add descriptive context, and generate properly formatted content files that are optimized for AI consumption. Instead of juggling multiple files or losing track of which code snippets are relevant, you can drag and drop files into logical groups, add descriptions for better context, and generate a single, well-formatted file that contains everything an AI needs to understand your code.
+
+For example, when discussing a bug with an AI, you can quickly group your component file, its tests, and related utilities, add a description of the issue, and generate a complete context file. This ensures the AI has all the necessary information without the noise of unrelated code.
 
 ## Installation
 
