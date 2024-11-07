@@ -12,23 +12,26 @@ export default function App() {
   const [config, setConfig] = useState(null)
   const [socket, setSocket] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('connecting')
+  const [lastMessage, setLastMessage] = useState(null) // Debug: track last message
 
   useEffect(() => {
     // Fetch initial config
     fetch('/api/config')
       .then((res) => res.json())
       .then(setConfig)
-      .catch(console.error)
+      .catch((error) => console.error('Config fetch error:', error))
 
     // Setup WebSocket connection
     const ws = new WebSocket(`ws://${window.location.host}`)
 
     ws.onopen = () => {
+      console.log('WebSocket connected') // Debug
       setConnectionStatus('connected')
       setSocket(ws)
     }
 
     ws.onclose = () => {
+      console.log('WebSocket disconnected') // Debug
       setConnectionStatus('disconnected')
       // Try to reconnect after a delay
       setTimeout(() => {
@@ -37,30 +40,22 @@ export default function App() {
     }
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
+      console.error('WebSocket error:', error) // Debug
       setConnectionStatus('error')
     }
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data)
+        console.log('Received WebSocket message:', data)
 
-        if (data.type === 'fileChange') {
-          // Refresh file list
-          fetch('/api/files')
-            .then((res) => res.json())
-            .then((data) => setFiles(data.files))
-            .catch(console.error)
-
-          // Handle deleted files in content boxes
-          if (data.event === 'unlink') {
-            setContentBoxes((boxes) =>
-              boxes.map((box) => ({
-                ...box,
-                files: box.files.filter((file) => file !== data.path),
-              }))
-            )
-          }
+        if (data && data.type === 'files' && Array.isArray(data.files)) {
+          // Filter out system files and ensure valid file names
+          const validFiles = data.files.filter(
+            (file) => typeof file === 'string' && !file.startsWith('.')
+          )
+          console.log('Setting files:', validFiles)
+          setFiles(validFiles)
         }
       } catch (error) {
         console.error('Error processing WebSocket message:', error)
@@ -89,6 +84,16 @@ export default function App() {
 
   return (
     <div className='flex h-screen bg-gray-100 p-4'>
+      {process.env.NODE_ENV !== 'production' && (
+        <div className='fixed bottom-4 right-4 bg-white p-4 rounded shadow-lg text-sm z-50'>
+          <div>Connection: {connectionStatus}</div>
+          <div>Files: {files.length}</div>
+          <div>
+            Last message:{' '}
+            {lastMessage ? JSON.stringify(lastMessage, null, 2) : 'none'}
+          </div>
+        </div>
+      )}
       <div className='w-80 mr-4 flex flex-col'>
         {connectionStatus !== 'connected' && (
           <div

@@ -1,5 +1,3 @@
-
-// src/cli/index.js
 import { program } from 'commander';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -28,98 +26,55 @@ async function main() {
   const port = parseInt(options.port, 10);
   const watchDir = path.resolve(options.dir);
 
-  // Start the server
-  const server = await startServer({
-    port,
-    watchDir,
-    config
-  });
-
-  // Nice console output
-  const url = `http://localhost:${port}`;
-  const message = [
-    `${chalk.bold('LLMix')} is running!`,
-    '',
-    `${chalk.bold('Watching:')} ${chalk.blue(watchDir)}`,
-    `${chalk.bold('Web UI:')} ${chalk.blue(url)}`,
-    '',
-    `Press ${chalk.cyan('Ctrl+C')} to stop`
-  ].join('\n');
-
-  console.log(boxen(message, {
-    padding: 1,
-    margin: 1,
-    borderStyle: 'round',
-    borderColor: 'green'
-  }));
-
-  // Open browser unless disabled
-  if (options.open) {
-    open(url);
-  }
-
-  // Handle shutdown
-  process.on('SIGINT', () => {
-    console.log(chalk.yellow('\nShutting down LLMix...'));
-    server.close(() => {
-      console.log(chalk.green('Goodbye! 👋'));
-      process.exit(0);
-    });
-  });
-}
-
-main().catch(error => {
-  console.error(chalk.red('Error:'), error);
-  process.exit(1);
-});
-
-// src/cli/utils.js
-import { cosmiconfig } from 'cosmiconfig';
-import chokidar from 'chokidar';
-import path from 'path';
-import fs from 'fs/promises';
-
-export async function loadConfig(dir) {
-  const explorer = cosmiconfig('llmix');
   try {
-    const result = await explorer.search(dir);
-    return result?.config || {};
-  } catch (error) {
-    console.warn('Warning: Error loading config file:', error.message);
-    return {};
-  }
-}
+    // Start the server
+    const server = await startServer({
+      port,
+      watchDir,
+      config
+    });
 
-export function setupWatcher(dir, config) {
-  return chokidar.watch(dir, {
-    ignored: [
-      /(^|[\/\\])\../, // dotfiles
-      ...(config.ignore || [])
-    ],
-    persistent: true
-  });
-}
+    // Nice console output
+    const url = `http://localhost:${port}`;
+    const message = [
+      `${chalk.bold.greenBright('🚀 LLMix is up and running! 🚀')}`,
+      '',
+      `${chalk.bold.yellow('👀 Watching:')} ${chalk.blue.bold(watchDir)}`,
+      `${chalk.bold.yellow('🌐 Web UI:')} ${chalk.cyan.bold(url)}`,
+      '',
+      `${chalk.magenta('💡 Tip:')} Press ${chalk.cyan.bold('Ctrl+C')} to stop`,
+      '',
+      `${chalk.gray('─────────────────────────────')}`,
+      `${chalk.bold.greenBright('🔥 Enjoy your LLMix experience! 🔥')}`,
+    ].join('\n');
 
-export async function getAllFiles(dir) {
-  const files = [];
+    console.log(boxen(message, {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'double',
+      borderColor: 'cyanBright',
+      backgroundColor: 'black'
+    }));
 
-  async function scan(currentPath) {
-    const entries = await fs.readdir(currentPath, { withFileTypes: true });
 
-    for (const entry of entries) {
-      const fullPath = path.join(currentPath, entry.name);
-      const relativePath = path.relative(dir, fullPath);
-
-      if (entry.isDirectory()) {
-        if (!['node_modules', '.git', 'dist', 'build'].includes(entry.name)) {
-          await scan(fullPath);
-        }
-      } else {
-        files.push(relativePath.replace(/\\/g, '/'));
-      }
+    // Open browser unless disabled
+    if (options.open) {
+      await open(url);
     }
-  }
 
-  await scan(dir);
-  return files;
+    // Handle shutdown
+    process.on('SIGINT', () => {
+      console.log(chalk.yellow('\nShutting down LLMix...'));
+      server.close(() => {
+        console.log(chalk.green('Goodbye! 👋'));
+        process.exit(0);
+      });
+    });
+
+  } catch (error) {
+    console.error(chalk.red('Error:'), error.message);
+    process.exit(1);
+  }
 }
+
+main();

@@ -2,7 +2,7 @@
 module.exports = {
   // UI settings
   ui: {
-    port: 3001, // Default port (avoiding common dev server ports)
+    port: 3000, // Default port (avoiding common dev server ports)
     openBrowser: true, // Open browser when starting
   },
 

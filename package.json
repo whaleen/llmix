@@ -2,7 +2,7 @@
   "name": "llmix",
   "version": "0.1.0",
   "description": "Generate LLM-friendly content files from your repository",
-  "main": "dist/cli/index.js",
+  "main": "./dist/cli/index.js",
   "bin": {
     "llmix": "./bin/llmix.js"
   },
@@ -15,7 +15,9 @@
   ],
   "readme": "README.npm.md",
   "scripts": {
-    "build": "vite build",
+    "build:ui": "vite build",
+    "build:server": "NODE_ENV=production node scripts/build-server.js",
+    "build": "rimraf dist && npm run build:server && npm run build:ui",
     "dev": "vite",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm run prepare-readme && npm run verify",
@@ -62,13 +64,15 @@
     "express": "^4.18.2",
     "open": "^8.4.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
+    "esbuild": "^0.24.0",
     "postcss": "^8.4.33",
     "rimraf": "^5.0.5",
     "tailwindcss": "^3.4.1",

@@ -8,6 +8,7 @@ export default function ContentBox({
 }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(false)
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -39,10 +40,14 @@ export default function ContentBox({
   }
 
   const handleGenerate = async () => {
-    if (!box.files.length) return
+    if (!box.files.length) {
+      setError('Please add at least one file')
+      return
+    }
 
     setIsGenerating(true)
     setError(null)
+    setSuccess(false)
 
     try {
       const response = await fetch('/api/generate', {
@@ -58,15 +63,22 @@ export default function ContentBox({
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate content')
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to generate content')
       }
 
       const result = await response.json()
-      // Could show success message or do something with result.path
+      setSuccess(true)
+      console.log('Generated content:', result)
     } catch (err) {
       setError(err.message)
     } finally {
       setIsGenerating(false)
+
+      // Clear success message after 3 seconds
+      if (success) {
+        setTimeout(() => setSuccess(false), 3000)
+      }
     }
   }
 
@@ -77,7 +89,8 @@ export default function ContentBox({
           type='text'
           value={box.name}
           onChange={(e) => onUpdate({ ...box, name: e.target.value })}
-          className='font-medium text-lg border-none focus:ring-2 focus:ring-blue-500 rounded'
+          placeholder='Group name'
+          className='font-medium text-lg border-none focus:ring-2 focus:ring-blue-500 rounded w-full mr-2'
         />
         <button
           onClick={onRemove}
@@ -98,7 +111,9 @@ export default function ContentBox({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className='flex-1 border-2 border-dashed rounded p-4 mb-4 min-h-[200px] overflow-y-auto transition-colors'
+        className={`flex-1 border-2 border-dashed rounded p-4 mb-4 min-h-[200px] overflow-y-auto transition-colors ${
+          box.files.length ? 'border-gray-200' : 'border-gray-300'
+        }`}
       >
         {box.files.length === 0 ? (
           <div className='text-gray-400 text-center'>Drag files here</div>
@@ -122,12 +137,26 @@ export default function ContentBox({
         )}
       </div>
 
-      {error && <div className='text-red-500 text-sm mb-4'>{error}</div>}
+      {error && (
+        <div className='text-red-500 text-sm mb-4 p-2 bg-red-50 rounded'>
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className='text-green-500 text-sm mb-4 p-2 bg-green-50 rounded'>
+          Content generated successfully! Check your .llmix directory.
+        </div>
+      )}
 
       <button
         onClick={handleGenerate}
         disabled={isGenerating || !box.files.length}
-        className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed'
+        className={`p-3 rounded text-white font-medium transition-colors ${
+          isGenerating || !box.files.length
+            ? 'bg-gray-300 cursor-not-allowed'
+            : 'bg-blue-500 hover:bg-blue-600'
+        }`}
       >
         {isGenerating ? 'Generating...' : 'Generate Content'}
       </button>

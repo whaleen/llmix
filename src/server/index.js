@@ -16,57 +16,9 @@ export async function startServer({ port, watchDir, config }) {
   const server = app.listen(port);
   const wss = new WebSocketServer({ server });
 
-  app.use(express.static(path.join(__dirname, '../../dist')));
+  // API endpoints must come BEFORE static file serving
   app.use(express.json());
 
-  // Store connected clients to broadcast updates
-  const clients = new Set();
-
-  // WebSocket connection handling
-  wss.on('connection', (ws) => {
-    clients.add(ws);
-    console.log('Client connected');
-
-    // Send initial file list
-    getAllFiles(watchDir).then(files => {
-      ws.send(JSON.stringify({
-        type: 'files',
-        files
-      }));
-    });
-
-    // Clean up on client disconnect
-    ws.on('close', () => {
-      clients.delete(ws);
-      console.log('Client disconnected');
-    });
-  });
-
-  // File watcher events
-  watcher.on('all', async (event, path) => {
-    if (['add', 'unlink', 'change'].includes(event)) {
-      try {
-        const files = await getAllFiles(watchDir);
-        const message = JSON.stringify({
-          type: 'files',
-          files,
-          event,
-          path
-        });
-
-        // Broadcast to all connected clients
-        clients.forEach(client => {
-          if (client.readyState === client.OPEN) {
-            client.send(message);
-          }
-        });
-      } catch (error) {
-        console.error('Error broadcasting file update:', error);
-      }
-    }
-  });
-
-  // API endpoints
   app.get('/api/files', async (req, res) => {
     try {
       const files = await getAllFiles(watchDir);
@@ -93,6 +45,59 @@ export async function startServer({ port, watchDir, config }) {
       res.json(result);
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Static file serving and SPA fallback should come LAST
+  app.use(express.static(path.join(__dirname, '../ui')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../ui/index.html'));
+  });
+
+  // WebSocket connection handling
+  const clients = new Set();
+
+  wss.on('connection', (ws) => {
+    clients.add(ws);
+    console.log('Client connected');
+
+    // Send initial file list
+    getAllFiles(watchDir).then(files => {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'files',
+          files
+        }));
+      }
+    });
+
+    ws.on('close', () => {
+      clients.delete(ws);
+      console.log('Client disconnected');
+    });
+  });
+
+  // File watcher events
+  watcher.on('all', async (event, path) => {
+    if (['add', 'unlink', 'change'].includes(event)) {
+      try {
+        const files = await getAllFiles(watchDir);
+        const message = JSON.stringify({
+          type: 'files',
+          files,
+          event,
+          path
+        });
+
+        clients.forEach(client => {
+          if (client.readyState === client.OPEN) {
+            client.send(message);
+          }
+        });
+      } catch (error) {
+        console.error('Error broadcasting file update:', error);
+      }
     }
   });
 
