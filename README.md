@@ -19,6 +19,45 @@ cd your-project
 npx llmix
 ```
 
+# Development with npm link
+
+If you're developing or testing LLMix across different directories, you can use npm link. Here's how:
+
+1. Create a global link in the LLMix project:
+
+```bash
+# In the LLMix directory
+npm link
+```
+
+2. Link LLMix in your test directory:
+
+```bash
+# In your test directory
+npm link llmix
+```
+
+3. Run LLMix:
+
+```bash
+npx llmix
+```
+
+To unlink when you're done:
+
+```bash
+# In your test directory
+npm unlink llmix
+
+# In the LLMix directory
+npm unlink -g
+```
+
+If you need to test in a different directory:
+
+1. Unlink from the current test directory and LLMix as shown above
+2. Create fresh links using the steps at the beginning of this section
+
 ## Configuration
 
 LLMix works out of the box with sensible defaults. To customize its behavior, create a `llmix.config.js` (or `.llmixrc.json`) in your project root:
