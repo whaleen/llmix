@@ -1,10 +1,11 @@
+// src/cli/index.js
 import { program } from 'commander';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import boxen from 'boxen';
 import open from 'open';
-import { loadConfig, setupWatcher, getAllFiles } from './utils.js';
+import { loadConfig } from './utils.js';
 import { startServer } from '../server/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,7 +29,7 @@ async function main() {
 
   try {
     // Start the server
-    const server = await startServer({
+    const { cleanup } = await startServer({
       port,
       watchDir,
       config
@@ -56,19 +57,15 @@ async function main() {
       backgroundColor: 'black'
     }));
 
-
     // Open browser unless disabled
     if (options.open) {
       await open(url);
     }
 
     // Handle shutdown
-    process.on('SIGINT', () => {
-      console.log(chalk.yellow('\nShutting down LLMix...'));
-      server.close(() => {
-        console.log(chalk.green('Goodbye! 👋'));
-        process.exit(0);
-      });
+    process.on('SIGINT', async () => {
+      // Let the server's cleanup function handle all messages
+      await cleanup();
     });
 
   } catch (error) {
