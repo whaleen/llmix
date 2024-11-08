@@ -30,7 +30,11 @@ cd your-project
 npx llmix
 ```
 
-The web UI will open automatically (default: http://localhost:3001)
+This will start:
+
+- Backend server on port 3001
+- Web interface available at http://localhost:5173 (in development)
+- Browser will open automatically
 
 ## Configuration
 
@@ -40,7 +44,7 @@ Create `llmix.config.js` in your project root:
 module.exports = {
   // UI settings
   ui: {
-    port: 3001,
+    port: 3001, // Backend server port
     openBrowser: true,
   },
 
@@ -63,7 +67,7 @@ module.exports = {
 npx llmix [options]
 
 Options:
-  -p, --port <number>  Override configured port
+  -p, --port   Override configured port (default: 3001)
   --no-open            Don't open browser automatically
   -h, --help          Display help
 ```

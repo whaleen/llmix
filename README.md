@@ -19,6 +19,8 @@ cd your-project
 npx llmix
 ```
 
+This will start both the backend server (port 3001) and the development UI server (port 5173). The web interface will open automatically in your default browser.
+
 # Development with npm link
 
 If you're developing or testing LLMix across different directories, you can use npm link. Here's how:
@@ -53,10 +55,37 @@ npm unlink llmix
 npm unlink -g
 ```
 
-If you need to test in a different directory:
+### Development Mode
 
-1. Unlink from the current test directory and LLMix as shown above
-2. Create fresh links using the steps at the beginning of this section
+When developing LLMix, you can run it in development mode:
+
+```bash
+npm run dev
+```
+
+This starts:
+
+- Backend server on port 3001
+- Vite dev server with hot reloading on port 5173
+
+For production builds:
+
+```bash
+npm run build
+```
+
+### UI Development
+
+You can edit the UI while llmix is running:
+
+1. Start the development servers:
+
+```bash
+npm run dev
+```
+
+2. Make changes to your UI files
+3. Changes will automatically reload in your browser at http://localhost:5173
 
 ## Configuration
 
@@ -66,7 +95,7 @@ LLMix works out of the box with sensible defaults. To customize its behavior, cr
 module.exports = {
   // UI settings
   ui: {
-    port: 3001, // Which port to run the web UI on
+    port: 3001, // Backend server port
     openBrowser: true, // Whether to open browser on startup
   },
 
@@ -93,7 +122,7 @@ module.exports = {
 
 #### `ui`
 
-- `port` (number): Port for the web interface. Defaults to 3001.
+- `port` (number): Port for the backend server. Defaults to 3001.
 - `openBrowser` (boolean): Whether to open browser when starting. Defaults to true.
 
 #### `ignore`
